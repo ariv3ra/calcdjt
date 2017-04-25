@@ -1,4 +1,4 @@
-calcdjt
+gustos
 ============================
 
 Tweet Reference information
@@ -20,7 +20,9 @@ Create `config.json`
   ]
 }
 ```
-###Docker Build Command
+
+### Docker Build Command
+
 ```
-docker build --rm=true -t djt .
+docker build --rm=true -t gustos .
 ```
