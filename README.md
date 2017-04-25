@@ -11,7 +11,13 @@ Create `config.json`
   "CONSUMER_SECRET":"twitter consumer secret",
   "ACCESS_KEY":"twitter access key", 
   "ACCESS_SECRET":"twitter access secret",
-  "MONGO_URI":"MongoDB Connection String"
+  "MONGO_URI":"MongoDB Connection String",
+  "TWITTER_TARGETS":[
+   "List of Twitter IDs to capture"
+  ],
+  "RESPONSE_TARGETS":[
+    "List of Twitter IDs to target & respond to"
+  ]
 }
 ```
 ###Docker Build Command
