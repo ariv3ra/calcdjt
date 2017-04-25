@@ -1,8 +1,8 @@
 FROM python:2-alpine
-MAINTAINER "Angel Rivera" <ariv3ra@gmail.com>
+MAINTAINER "Angel Rivera"
 
-RUN mkdir -p /opt/djt
-COPY stream.py config.json requirements.txt /opt/djt/
-RUN pip install -r /opt/djt/requirements.txt
-CMD ["python","/opt/djt/stream.py"]
+RUN mkdir -p /opt/gustos
+COPY stream.py config.json requirements.txt /opt/gustos/
+RUN pip install -r /opt/gustos/requirements.txt
+CMD ["python","/opt/gustos/stream.py"]
 
