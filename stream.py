@@ -117,7 +117,7 @@ class StreamListener(tweepy.StreamListener):
             twt_url = self.generate_status_url(scr_name, twt_id)
             resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
             # reply to tweet
-            api.update_status(resp,twt_id)
+            api.update_status(resp,status_id)
             # Update record as processed
             self.update_tweet_processed(twt_id)
 
