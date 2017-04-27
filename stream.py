@@ -34,7 +34,9 @@ class StreamListener(tweepy.StreamListener):
         url = 'https://twitter.com/{0}/status/{1}'.format(screen_name, tid)
         return url
     def percent_response(self, screen_name, percentage, followers, status_url):
-        MSG = '@{0}\n{1} of your {2} Followers Liked this Tweet:\n{3}'.format(screen_name, percentage, followers, status_url)
+        emoji = u"\U0001F447" #pointdown finger
+        MSG = '@{0}\n{1} of your {2} Followers Liked this Tweet:\n'.format(screen_name, percentage, followers) \
+            + u"\U0001F447" + '\n{0}'.format(status_url)
         return MSG
     def human_format(self, num):
         magnitude = 0
@@ -116,7 +118,7 @@ class StreamListener(tweepy.StreamListener):
             # generate the status url
             twt_url = self.generate_status_url(scr_name, twt_id)
             resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
-            # reply to tweet
+            # reply to new tweet
             api.update_status(resp,status_id)
             # Update record as processed
             self.update_tweet_processed(twt_id)

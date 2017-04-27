@@ -27,6 +27,7 @@ except IOError as err:
 tid = ''
 uid = ''
 sc = ''
+maxid = ''
 
 AUTH = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 AUTH.set_access_token(ACCESS_KEY, ACCESS_SECRET)
@@ -70,10 +71,16 @@ def save_tweet(status):
             'processed':processed} )
     msg = "TID: {0}  UID: {1} Handle: {2} RepToID: {3} RepToName: {4} created_at: {5}"
     print msg.format(tweet_id, user_id, screen_name, reply_id, reply_name, created_at)    
-#print has_tweet(tid)
-# print get_tweet(uid)
 
-stuff = api.user_timeline(screen_name = sc, count = 200, include_rts = False)
-for s in stuff:
-    save_tweet(s)
+def get_older_status(sn,max_id):
+    stuff = api.user_timeline(screen_name = sn, max_id = max_id, count = 200, include_rts = False)
+    for s in stuff:
+        save_tweet(s)
+
+def percent_response(screen_name, percentage, followers, status_url):
+    emoji = u"\U0001F447"
+    MSG = '@{0}\n{1} of your {2} Followers Liked this Tweet:\n'.format(screen_name, percentage, followers) \
+        + u"\U0001F447" + '\n{0}'.format(status_url)
+    return MSG
+
 
