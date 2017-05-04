@@ -72,8 +72,13 @@ def save_tweet(status):
     msg = "TID: {0}  UID: {1} Handle: {2} RepToID: {3} RepToName: {4} created_at: {5}"
     print msg.format(tweet_id, user_id, screen_name, reply_id, reply_name, created_at)    
 
-def get_older_status(sn,max_id):
+def get_older_status_maxid(sn,max_id):
     stuff = api.user_timeline(screen_name = sn, max_id = max_id, count = 200, include_rts = False)
+    for s in stuff:
+        save_tweet(s)
+
+def get_older_status(sn):
+    stuff = api.user_timeline(screen_name = sn, count = 50, include_rts = False)
     for s in stuff:
         save_tweet(s)
 
@@ -83,4 +88,4 @@ def percent_response(screen_name, percentage, followers, status_url):
         + u"\U0001F447" + '\n{0}'.format(status_url)
     return MSG
 
-
+get_older_status('<twitter_handle>')
