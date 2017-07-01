@@ -1,7 +1,8 @@
-import os, sys, datetime, json, tweepy
+import os, sys, datetime, json, tweepy, re
 from tweepy import StreamListener
 from tweepy import Stream
 from pymongo import MongoClient
+from textblob import TextBlob
 
 CONSUMER_KEY = None
 CONSUMER_SECRET = None
@@ -33,6 +34,13 @@ AUTH = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 AUTH.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 api = tweepy.API(AUTH)
 
+def clean_tweet(tweet):
+    '''
+    Utility function to clean tweet text by removing links, special characters
+    using simple regex statements.
+    '''
+    return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split())
+
 def has_tweet(tid):
     client = MongoClient(MONGO_URI)
     db = client['djt']
@@ -43,6 +51,10 @@ def has_tweet(tid):
     else:
         return False
 
+def test_sentitment(txt):
+    for t in txt:
+        analysis = TextBlob(t)
+        print 'text: {0} - Polarity: {1}'.format(t,analysis.sentiment.polarity)
 
 def get_tweet(uid):
     client = MongoClient(MONGO_URI)
@@ -54,7 +66,18 @@ def get_tweet(uid):
         status_id = t['tid']
     return status_id
 
-def save_tweet(status):
+def get_saved_tweet(uid):
+    client = MongoClient(MONGO_URI)
+    db = client['djt']
+    tweets = db.tweets
+    twt = tweets.find({'processed':False,'uid':uid}).sort('created_at',1).limit(1)
+    status_id=''
+    for t in twt:
+        status_id = t['tid']
+        txt = clean_tweet(t['text'])
+    return {'tid':status_id, 'text':txt}
+
+def save_tweet(status): 
     client = MongoClient(MONGO_URI)
     db = client['djt']
     tweets = db.tweets
@@ -81,6 +104,10 @@ def get_older_status(sn):
     stuff = api.user_timeline(screen_name = sn, count = 50, include_rts = False)
     for s in stuff:
         save_tweet(s)
+def get_status(status_id):
+    stuff = api.get_status(status_id)
+    print stuff.source
+
 
 def percent_response(screen_name, percentage, followers, status_url):
     emoji = u"\U0001F447"
@@ -88,4 +115,16 @@ def percent_response(screen_name, percentage, followers, status_url):
         + u"\U0001F447" + '\n{0}'.format(status_url)
     return MSG
 
-get_older_status('<twitter_handle>')
+# get_older_status('<twitter_handle>')
+
+# get_status('860635815277453313')
+
+statements = [
+    'Trump is an asshole.',
+    'Etienne is a loving boy',
+    'Kristin is a great wife',
+    'Country is not doing so well these days because Trump is being arrogant',
+    'My favorite desert is apple pie'
+]
+
+test_sentitment(statements)
