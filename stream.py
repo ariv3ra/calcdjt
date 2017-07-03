@@ -70,6 +70,16 @@ class StreamListener(tweepy.StreamListener):
             status_id=''
             for t in twt:
                 status_id = t['tid']
+
+            # Check if tweet exists in Twitter
+            try:
+                resp_tweet = api.get_status(status_id)
+            except tweepy.TweepError as e:
+                if e.message[0]['code'] == 144:
+                    # Flag the deleted tweet
+                    self.update_tweet_processed(status_id)
+                    # Get a new tweet
+                    status_id = self.get_tweet(uid)
             return status_id
     def save_tweet(self, status):
             client = MongoClient(MONGO_URI)

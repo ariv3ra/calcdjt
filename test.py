@@ -64,6 +64,16 @@ def get_tweet(uid):
     status_id=''
     for t in twt:
         status_id = t['tid']
+
+    # Check if tweet exists in Twitter
+    try:
+        resp_tweet = api.get_status(status_id)
+    except tweepy.TweepError as e:
+        if e.message[0]['code'] == 144:
+            # Flag the deleted tweet
+            update_tweet_processed(status_id)
+            # Get a new tweet
+            status_id = get_tweet(uid)
     return status_id
 
 def get_saved_tweet(uid):
@@ -107,7 +117,13 @@ def get_older_status(sn):
 def get_status(status_id):
     stuff = api.get_status(status_id)
     print stuff.source
-
+ 
+def update_tweet_processed(tid):
+    client = MongoClient(MONGO_URI)
+    db = client['djt']
+    tweets = db.tweets
+    twt = tweets.update_one({'tid':tid},{'$set':{'processed':True}});
+    print "Tweet {0} Processed".format(tid)        
 
 def percent_response(screen_name, percentage, followers, status_url):
     emoji = u"\U0001F447"
@@ -117,14 +133,14 @@ def percent_response(screen_name, percentage, followers, status_url):
 
 # get_older_status('<twitter_handle>')
 
-# get_status('860635815277453313')
+# get_status('879680876501766144112')
+print get_tweet('25073877')
+# statements = [
+#     'Trump is an asshole.',
+#     'Etienne is a loving boy',
+#     'Kristin is a great wife',
+#     'Country is not doing so well these days because Trump is being arrogant',
+#     'My favorite desert is apple pie'
+# ]
 
-statements = [
-    'Trump is an asshole.',
-    'Etienne is a loving boy',
-    'Kristin is a great wife',
-    'Country is not doing so well these days because Trump is being arrogant',
-    'My favorite desert is apple pie'
-]
-
-test_sentitment(statements)
+# test_sentitment(statements)
