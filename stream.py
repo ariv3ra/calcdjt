@@ -112,7 +112,10 @@ class StreamListener(tweepy.StreamListener):
         scr_name = status.user.screen_name
         # Check for tweets & replies from Targets
         if (user_id in TWITTER_TARGETS) and not hasattr(status, 'retweeted_status'):
-            self.save_tweet(status)
+            if scr_name == "realDonaldTrump":
+                self.save_tweet(status)
+            if scr_name == "whlogz":
+                api.retweet(status_id)
         # get & calculate percentage & reply to tweet
         if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
