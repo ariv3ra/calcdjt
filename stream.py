@@ -116,25 +116,28 @@ class StreamListener(tweepy.StreamListener):
                 self.save_tweet(status)
             if scr_name == "whlogz":
                 api.retweet(status_id)
+
         # get & calculate percentage & reply to tweet
-        if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
-            # get status details 
-            twt_id = self.get_tweet(user_id)
-            twt = api.get_status(twt_id)
-            followers_count = twt.user.followers_count
-            favorite_count = twt.favorite_count
-
-            # calcualte percentage
-            perc_number = self.percentage(favorite_count, followers_count)
-            abrev_followers =self.human_format(followers_count)
-            # generate the status url
-            twt_url = self.generate_status_url(scr_name, twt_id)
-            resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
-            # reply to new tweet
-            api.update_status(resp,status_id)
-            # Update record as processed
-            self.update_tweet_processed(twt_id)
+### UnComment this if statement when some tweets have been collected
+        # if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
+        #
+        #     # get status details
+        #     twt_id = self.get_tweet(user_id)
+        #     twt = api.get_status(twt_id)
+        #     followers_count = twt.user.followers_count
+        #     favorite_count = twt.favorite_count
+        #
+        #     # calcualte percentage
+        #     perc_number = self.percentage(favorite_count, followers_count)
+        #     abrev_followers =self.human_format(followers_count)
+        #     # generate the status url
+        #     twt_url = self.generate_status_url(scr_name, twt_id)
+        #     resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
+        #     # reply to new tweet
+        #     api.update_status(resp,status_id)
+        #     # Update record as processed
+        #     self.update_tweet_processed(twt_id)
 
     def on_error(self, status_code):
         if status_code == 420:
