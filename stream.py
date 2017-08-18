@@ -167,7 +167,7 @@ class StreamListener(tweepy.StreamListener):
 
                 # Tweet the message
                 resp_message = '@{0}\n{1}'.format(scr_name, msg)
-                api.update_status(msg, status_id)
+                api.update_status(resp_message, status_id)
                 self.update_messages(obj_id)
 
     def on_error(self, status_code):
