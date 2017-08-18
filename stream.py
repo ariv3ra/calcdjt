@@ -81,6 +81,26 @@ class StreamListener(tweepy.StreamListener):
                     # Get a new tweet
                     status_id = self.get_tweet(uid)
             return status_id
+
+    # Query MongoDB for messages
+    def get_message(self):
+        client = MongoClient(MONGO_URI)
+        db = client['djt']
+        coll_messages = db.messages
+        msgs = coll_messages.find({'processed':False}).sort('created_at', 1).limit(1)
+        msg = {}
+        for m in msgs:
+            msg['_id'] = m['_id']
+            msg['message'] = m['message']
+        return msg
+
+    # Update the messages to True once processed
+    def update_messages(self, obj_id):
+        msg_id = obj_id
+        client = MongoClient(MONGO_URI)
+        db = client['djt']
+        db.messages.find_one_and_update({'_id':msg_id}, {'$set':{'processed':True}})
+
     def save_tweet(self, status):
             client = MongoClient(MONGO_URI)
             db = client['djt']
@@ -110,6 +130,8 @@ class StreamListener(tweepy.StreamListener):
         status_id = status.id_str
         user_id = status.user.id_str
         scr_name = status.user.screen_name
+
+        #
         # Check for tweets & replies from Targets
         if (user_id in TWITTER_TARGETS) and not hasattr(status, 'retweeted_status'):
             if scr_name == "realDonaldTrump":
@@ -135,6 +157,18 @@ class StreamListener(tweepy.StreamListener):
             api.update_status(resp,status_id)
             # Update record as processed
             self.update_tweet_processed(twt_id)
+
+            # respond with message
+            message = self.get_message()
+
+            if message:
+                obj_id = message['_id']
+                msg = message['message']
+
+                # Tweet the message
+                resp_message = '@{0}\n{1}'.format(scr_name, msg)
+                api.update_status(msg, status_id)
+                self.update_messages(obj_id)
 
     def on_error(self, status_code):
         if status_code == 420:
