@@ -31,6 +31,7 @@ uid = ''
 sc = ''
 maxid = ''
 
+
 def get_statements(file_name):
     pathname = os.path.dirname(sys.argv[0])
     config_file = os.path.abspath(pathname)+'/{0}'.format(file_name)
@@ -41,6 +42,7 @@ def get_statements(file_name):
                 msg = m.strip()
                 lst.append(msg)
     return lst
+
 
 def save_statements(messages):
     # Save messages from file to mongo
@@ -55,4 +57,26 @@ def save_statements(messages):
         coll_messages.insert(msg)
         print(msg)
 
-save_statements(get_statements('data.txt'))
+
+def get_message():
+    client = MongoClient(MONGO_URI)
+    db = client['djt']
+    coll_messages = db.messages
+    msgs = coll_messages.find({'processed':False}).sort('created_at', 1).limit(1)
+    msg = {}
+    for m in msgs:
+        msg['_id'] = m['_id']
+        msg['message'] = m['message']
+    return msg
+
+
+def update_messages(obj_id):
+    msg_id = obj_id
+    client = MongoClient(MONGO_URI)
+    db = client['djt']
+    db.messages.find_one_and_update({'_id':msg_id}, {'$set':{'processed':True}})
+
+
+# save_statements(get_statements('data.txt'))
+
+print(get_message())
