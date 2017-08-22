@@ -77,6 +77,6 @@ def update_messages(obj_id):
     db.messages.find_one_and_update({'_id':msg_id}, {'$set':{'processed':True}})
 
 
-# save_statements(get_statements('data.txt'))
+save_statements(get_statements('data.txt'))
 
-print(get_message())
+# print(get_message())
