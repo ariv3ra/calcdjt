@@ -170,7 +170,7 @@ class StreamListener(tweepy.StreamListener):
 
                 # Check the length of tweet
                 if len(resp_message) <= 140:
-                    api.update_status(resp_message, status_id)
+                    api.update_status(resp_message.encode('utf-8'), status_id)
                 self.update_messages(obj_id)
 
     def on_error(self, status_code):
