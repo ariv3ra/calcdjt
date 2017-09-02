@@ -39,7 +39,7 @@ def get_statements(file_name):
     with open(config_file) as message_file:
         for m in message_file:
             if m.strip():
-                msg = m.strip()
+                msg = m.strip().encode('utf-8')
                 lst.append(msg)
     return lst
 
@@ -62,7 +62,7 @@ def get_message():
     client = MongoClient(MONGO_URI)
     db = client['djt']
     coll_messages = db.messages
-    msgs = coll_messages.find({'processed':False}).sort('created_at', 1).limit(1)
+    msgs = coll_messages.find({'processed':False}).sort('created_at', -1).limit(1)
     msg = {}
     for m in msgs:
         msg['_id'] = m['_id']
@@ -79,4 +79,4 @@ def update_messages(obj_id):
 
 save_statements(get_statements('data.txt'))
 
-# print(get_message())
+print(get_message()['message'])
