@@ -141,23 +141,25 @@ class StreamListener(tweepy.StreamListener):
         # get & calculate percentage & reply to tweet
         if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
-            # get status details 
-            twt_id = self.get_tweet(user_id)
-            twt = api.get_status(twt_id)
-            followers_count = twt.user.followers_count
-            favorite_count = twt.favorite_count
+            # # get status details 
+            # twt_id = self.get_tweet(user_id)
+            # twt = api.get_status(twt_id)
+            # followers_count = twt.user.followers_count
+            # favorite_count = twt.favorite_count
 
-            # calcualte percentage
-            perc_number = self.percentage(favorite_count, followers_count)
-            abrev_followers =self.human_format(followers_count)
-            # generate the status url
-            twt_url = self.generate_status_url(scr_name, twt_id)
-            resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
-            # reply to new tweet
-            api.update_status(resp,status_id)
-            # Update record as processed
-            self.update_tweet_processed(twt_id)
+            # # calcualte percentage
+            # perc_number = self.percentage(favorite_count, followers_count)
+            # abrev_followers =self.human_format(followers_count)
+            # # generate the status url
+            # twt_url = self.generate_status_url(scr_name, twt_id)
+            # resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
+            # # reply to new tweet
+            # api.update_status(resp,status_id)
+            # # Update record as processed
+            # self.update_tweet_processed(twt_id)
 
+            #######################################################3
+            # Response bot start
             # respond with message
             message = self.get_message()
 
@@ -171,6 +173,7 @@ class StreamListener(tweepy.StreamListener):
                 # Check the length of tweet
                 if len(resp_message) <= 140:
                     api.update_status(resp_message, status_id)
+                    print('ERROR: Tweet {0} was over 140 characters'.format(obj_id))
                 self.update_messages(obj_id)
 
     def on_error(self, status_code):
