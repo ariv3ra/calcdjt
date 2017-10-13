@@ -131,10 +131,23 @@ def percent_response(screen_name, percentage, followers, status_url):
         + u"\U0001F447" + '\n{0}'.format(status_url)
     return MSG
 
+def get_message():
+    client = MongoClient(MONGO_URI)
+    db = client['djt']
+    coll_messages = db.messages
+    msgs = coll_messages.find({'processed':False}).sort('created_at', 1).limit(1)
+    msg = {}
+    for m in msgs:
+        msg['_id'] = m['_id']
+        msg['message'] = m['message']
+    return msg
+
+msg = get_message()
+print(msg['message'])
 # get_older_status('<twitter_handle>')
 
 # get_status('879680876501766144112')
-print get_tweet('25073877')
+# print get_tweet('25073877')
 # statements = [
 #     'Trump is an asshole.',
 #     'Etienne is a loving boy',

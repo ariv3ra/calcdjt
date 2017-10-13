@@ -39,7 +39,7 @@ def get_statements(file_name):
     with open(config_file) as message_file:
         for m in message_file:
             if m.strip():
-                msg = m.strip().encode('utf-8')
+                msg = m.strip().decode('utf-8')
                 lst.append(msg)
     return lst
 
