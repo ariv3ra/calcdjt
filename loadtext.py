@@ -24,7 +24,7 @@ try:
     MONGO_URI = data['MONGO_URI']
     TWITTER_TARGETS = data['TWITTER_TARGETS']
 except IOError as err:
-    print "[error] "+err.message
+    print("[error] {0}", err.message)
 
 tid = ''
 uid = ''
@@ -39,14 +39,14 @@ def get_statements(file_name):
     with open(config_file) as message_file:
         for m in message_file:
             if m.strip():
-                msg = m.strip().decode('utf-8')
+                msg = m.strip()
                 lst.append(msg)
     return lst
 
 
 def save_statements(messages):
     # Save messages from file to mongo
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(MONGO_URI, retryWrites=False)
     db = client['djt']
     coll_messages = db.messages
     for m in messages:
@@ -54,7 +54,7 @@ def save_statements(messages):
                 'processed':False,
                 'created_at':datetime.datetime.utcnow()
         }
-        coll_messages.insert(msg)
+        coll_messages.insert_one(msg)
         print(msg)
 
 
