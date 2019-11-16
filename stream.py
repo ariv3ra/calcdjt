@@ -23,7 +23,7 @@ try:
     TWITTER_TARGETS = data['TWITTER_TARGETS']
     RESPONSE_TARGETS = data['RESPONSE_TARGETS']
 except IOError as err:
-    print "[error] "+err.message
+    print("[error] {0}",err.message)
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
@@ -117,14 +117,14 @@ class StreamListener(tweepy.StreamListener):
                     'reply_to_id':reply_id, 'reply_name':reply_name, 'text':tweet_text, 'created_at':created_at, \
                     'processed':processed} )
             msg = "TID: {0}  UID: {1} Handle: {2} RepToID: {3} RepToName: {4} created_at: {5}"
-            print msg.format(tweet_id, user_id, screen_name, reply_id, reply_name, created_at)
+            print(msg.format(tweet_id, user_id, screen_name, reply_id, reply_name, created_at))
     
     def update_tweet_processed(self, tid):
             client = MongoClient(MONGO_URI)
             db = client['djt']
             tweets = db.tweets
             twt = tweets.update_one({'tid':tid},{'$set':{'processed':True}});
-            print "Tweet {0} Processed".format(tid)
+            print("Tweet {0} Processed".format(tid))
 
     def on_status(self, status):
         status_id = status.id_str
