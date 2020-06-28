@@ -56,8 +56,8 @@ class StreamListener(tweepy.StreamListener):
             client = MongoClient(MONGO_URI)
             db = client['djt']
             tweets = db.tweets
-            twt = tweets.find({'tid':tid,'processed':True})
-            if twt.count()>0:
+            twt = tweets.count_documents({'tid':tid,'processed':True})
+            if twt > 0:
                 return True
             else:
                 return False
@@ -69,13 +69,15 @@ class StreamListener(tweepy.StreamListener):
             twt = tweets.find({'processed':False,'uid':uid}).sort('created_at',1).limit(1)
             status_id=''
             for t in twt:
-                status_id = t['tid']
+                status_id = t['tid']    
+            
+            print("Status Id: {0}".format(status_id))
 
             # Check if tweet exists in Twitter
             try:
                 resp_tweet = api.get_status(status_id)
             except tweepy.TweepError as e:
-                if e.message[0]['code'] == 144:
+                if e.api_code == 144:
                     # Flag the deleted tweet
                     self.update_tweet_processed(status_id)
                     # Get a new tweet
@@ -92,6 +94,7 @@ class StreamListener(tweepy.StreamListener):
         for m in msgs:
             msg['_id'] = m['_id']
             msg['message'] = m['message']
+        print("message: {0}".format(msg))
         return msg
 
     # Update the messages to True once processed
@@ -113,7 +116,7 @@ class StreamListener(tweepy.StreamListener):
             reply_name = status.in_reply_to_screen_name if status.in_reply_to_screen_name else ''
             tweet_text = status.text.encode('utf-8')
             processed = False
-            twt = tweets.insert({'tid':tweet_id, 'uid':user_id, 'screen_name':screen_name, \
+            twt = tweets.insert_one({'tid':tweet_id, 'uid':user_id, 'screen_name':screen_name, \
                     'reply_to_id':reply_id, 'reply_name':reply_name, 'text':tweet_text, 'created_at':created_at, \
                     'processed':processed} )
             msg = "TID: {0}  UID: {1} Handle: {2} RepToID: {3} RepToName: {4} created_at: {5}"
@@ -134,18 +137,20 @@ class StreamListener(tweepy.StreamListener):
         #
         # Check for tweets & replies from Targets
         if (user_id in TWITTER_TARGETS) and not hasattr(status, 'retweeted_status'):
-            if scr_name == "realDonaldTrump":
-                self.save_tweet(status)
+            # if scr_name == "realDonaldTrump":
+                # self.save_tweet(status)
             if scr_name == "whlogz":
-                api.retweet(status_id)
+                # api.retweet(status_id)
+                print("The account: {0} just tweeted".format(scr_name))
+                self.save_tweet(status)                
         # get & calculate percentage & reply to tweet
         if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
-            # # get status details 
-            # twt_id = self.get_tweet(user_id)
-            # twt = api.get_status(twt_id)
-            # followers_count = twt.user.followers_count
-            # favorite_count = twt.favorite_count
+            # get status details 
+            twt_id = self.get_tweet(user_id)
+            twt = api.get_status(twt_id)
+            followers_count = twt.user.followers_count
+            favorite_count = twt.favorite_count
 
             # # calcualte percentage
             # perc_number = self.percentage(favorite_count, followers_count)
@@ -168,12 +173,11 @@ class StreamListener(tweepy.StreamListener):
                 msg = message['message']
 
                 # Tweet the message
-                resp_message = '@{0}\n{1}'.format(scr_name, msg.encode('utf-8'))
+                resp_message = '@{0}\n{1}'.format(scr_name, msg)
 
                 # Check the length of tweet
                 if len(resp_message) <= 140:
-                    api.update_status(resp_message, status_id)
-                    print('ERROR: Tweet {0} was over 140 characters'.format(obj_id))
+                    api.update_status(resp_message.encode('utf-8'), status_id)
                 self.update_messages(obj_id)
 
     def on_error(self, status_code):
