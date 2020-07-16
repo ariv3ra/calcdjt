@@ -148,6 +148,7 @@ class StreamListener(tweepy.StreamListener):
                 print('Found Name: {0} | Image: {1}'.format(name['name'], name['img_name']))
                 status = True
                 img_name = name['img_name']
+                break
         return {'found':status, 'img_name':img_name}
 
     def on_status(self, status):
