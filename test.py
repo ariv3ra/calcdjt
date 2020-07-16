@@ -1,4 +1,4 @@
-import os, sys, datetime, json, tweepy, re
+import os, sys, datetime, json, tweepy, re, random, time
 from tweepy import StreamListener
 from tweepy import Stream
 from pymongo import MongoClient
@@ -9,6 +9,10 @@ CONSUMER_SECRET = None
 ACCESS_KEY = None
 ACCESS_SECRET = None
 MONGO_URI = None
+IMAGE_LIST = None
+IMAGE_DIR = 'kia_imgs/'
+
+TEST_MESSAGE='U.S. Marine Reserve Sergeant Hines, Benjamin S. killed at age 31 on 04/08/2019 was betrayed by Traitor Donald Trump and GOP'
 
 try:
     pathname = os.path.dirname(sys.argv[0])
@@ -23,7 +27,16 @@ try:
     MONGO_URI = data['MONGO_URI']
     TWITTER_TARGETS = data['TWITTER_TARGETS']
 except IOError as err:
-    print "[error] "+err.message
+    print("[error] "+err.message)
+
+try:
+    img_pathname = os.path.dirname(sys.argv[0])
+    img_file = os.path.abspath(img_pathname)+'/kia_images.json'
+    with open(img_file) as img_file:
+        data = json.load(img_file)
+    IMAGE_LIST = data
+except IOError as err:
+    print("[error] {0}",err.message)    
 
 tid = ''
 uid = ''
@@ -54,7 +67,7 @@ def has_tweet(tid):
 def test_sentitment(txt):
     for t in txt:
         analysis = TextBlob(t)
-        print 'text: {0} - Polarity: {1}'.format(t,analysis.sentiment.polarity)
+        print('text: {0} - Polarity: {1}'.format(t,analysis.sentiment.polarity))
 
 def get_tweet(uid):
     client = MongoClient(MONGO_URI)
@@ -103,7 +116,7 @@ def save_tweet(status):
             'reply_to_id':reply_id, 'reply_name':reply_name, 'text':tweet_text, 'created_at':created_at, \
             'processed':processed} )
     msg = "TID: {0}  UID: {1} Handle: {2} RepToID: {3} RepToName: {4} created_at: {5}"
-    print msg.format(tweet_id, user_id, screen_name, reply_id, reply_name, created_at)    
+    print(msg.format(tweet_id, user_id, screen_name, reply_id, reply_name, created_at))
 
 def get_older_status_maxid(sn,max_id):
     stuff = api.user_timeline(screen_name = sn, max_id = max_id, count = 200, include_rts = False)
@@ -116,14 +129,14 @@ def get_older_status(sn):
         save_tweet(s)
 def get_status(status_id):
     stuff = api.get_status(status_id)
-    print stuff.source
+    print(stuff.source)
  
 def update_tweet_processed(tid):
     client = MongoClient(MONGO_URI)
     db = client['djt']
     tweets = db.tweets
     twt = tweets.update_one({'tid':tid},{'$set':{'processed':True}});
-    print "Tweet {0} Processed".format(tid)        
+    print("Tweet {0} Processed".format(tid))
 
 def percent_response(screen_name, percentage, followers, status_url):
     emoji = u"\U0001F447"
@@ -142,8 +155,59 @@ def get_message():
         msg['message'] = m['message']
     return msg
 
-msg = get_message()
-print(msg['message'])
+def iterate_files(file_path):
+    directory = os.fsencode(file_path)
+    name_media_id = []
+    for file in os.listdir(directory):
+        path = str(directory.decode('UTF-8'))
+        file_name = os.fsdecode(file)
+        fp = os.path.join(path, file_name)
+        print('Uploading: {0}'.format(file_name))
+        # media_id = api.media_upload(fp).__getattribute__('media_id')
+        print('Media ID: {0}'.format(media_id))
+        media_ids = {
+            'media_id':media_id, 
+            'img_name':file_name
+            }
+        name_media_id.append(media_ids)
+        time.sleep(3)
+    with open('log_media_ids.json', 'w') as fout:
+        json.dump(name_media_id, fout)
+
+def find_img(message, image_list, image_dir):
+    for name in image_list:
+        if name['name'] in message:
+            print('Found Name: {0} | Image: {1}'.format(name['name'], name['img_name']))
+            # Upload image
+            media = api.media_upload(image_dir+name['img_name'])
+            # Post tweet with image
+            tweet = message
+            post_result = api.update_status(status=tweet, media_ids=[media.media_id])
+
+    # directory = os.fsencode(file_path)
+    # name_media_id = []
+    # for file in os.listdir(directory):
+    #     path = str(directory.decode('UTF-8'))
+    #     file_name = os.fsdecode(file)
+    #     fp = os.path.join(path, file_name)
+    #     print('Uploading: {0}'.format(file_name))
+    #     # media_id = api.media_upload(fp).__getattribute__('media_id')
+    #     print('Media ID: {0}'.format(media_id))
+    #     media_ids = {
+    #         'media_id':media_id, 
+    #         'img_name':file_name
+    #         }
+    #     name_media_id.append(media_ids)
+    #     time.sleep(3)
+    # with open('log_media_ids.json', 'w') as fout:
+    #     json.dump(name_media_id, fout)        
+    
+find_img(TEST_MESSAGE,IMAGE_LIST,IMAGE_DIR)
+
+# fp = '/home/angel/Pictures/dead_bounties'
+# iterate_files(fp)
+# msg = get_message()
+# print(msg['message'])
 # get_older_status('<twitter_handle>')
 
 # get_status('879680876501766144112')

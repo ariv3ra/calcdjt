@@ -8,6 +8,8 @@ CONSUMER_SECRET = None
 ACCESS_KEY = None
 ACCESS_SECRET = None
 MONGO_URI = None
+IMAGE_LIST = None
+IMAGE_DIR = 'kia_imgs/'
 
 try:
     pathname = os.path.dirname(sys.argv[0])
@@ -22,6 +24,15 @@ try:
     MONGO_URI = data['MONGO_URI']
     TWITTER_TARGETS = data['TWITTER_TARGETS']
     RESPONSE_TARGETS = data['RESPONSE_TARGETS']
+except IOError as err:
+    print("[error] {0}",err.message)
+
+try:
+    img_pathname = os.path.dirname(sys.argv[0])
+    img_file = os.path.abspath(img_pathname)+'/kia_images.json'
+    with open(img_file) as img_file:
+        data = json.load(img_file)
+    IMAGE_LIST = data
 except IOError as err:
     print("[error] {0}",err.message)
 
@@ -129,6 +140,16 @@ class StreamListener(tweepy.StreamListener):
             twt = tweets.update_one({'tid':tid},{'$set':{'processed':True}});
             print("Tweet {0} Processed".format(tid))
 
+    def get_media(self, tweet_message, image_list, image_dir):
+        status = False
+        img_name = ''
+        for name in image_list:
+            if name['name'] in tweet_message:
+                print('Found Name: {0} | Image: {1}'.format(name['name'], name['img_name']))
+                status = True
+                img_name = name['img_name']
+        return {'found':status, 'img_name':img_name}
+
     def on_status(self, status):
         status_id = status.id_str
         user_id = status.user.id_str
@@ -177,7 +198,15 @@ class StreamListener(tweepy.StreamListener):
 
                 # Check the length of tweet
                 if len(resp_message) <= 140:
-                    api.update_status(resp_message.encode('utf-8'), status_id)
+                    image_name =  self.get_media(resp_message, IMAGE_LIST, IMAGE_DIR)
+                    if image_name['found'] == True:
+                        # Upload image
+                        media = api.media_upload(IMAGE_DIR+image_name['img_name'])
+                        # Post tweet with image
+                        tweet = resp_message
+                        post_result = api.update_status(status=tweet.encode('utf-8'), media_ids=[media.media_id])                    
+                    else:
+                        api.update_status(resp_message.encode('utf-8'), status_id)
                 self.update_messages(obj_id)
 
     def on_error(self, status_code):
