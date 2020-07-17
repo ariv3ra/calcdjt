@@ -207,7 +207,7 @@ class StreamListener(tweepy.StreamListener):
                         media = api.media_upload(IMAGE_DIR+image_name['img_name'])
                         # Post tweet with image
                         tweet = resp_message
-                        post_result = api.update_status(status=tweet.encode('utf-8'), media_ids=[media.media_id])                    
+                        post_result = api.update_status(status=tweet.encode('utf-8'), in_reply_to_status_id=status_id, media_ids=[media.media_id])                    
                     else:
                         api.update_status(resp_message.encode('utf-8'), status_id)
                 self.update_messages(obj_id)
