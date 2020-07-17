@@ -209,7 +209,7 @@ class StreamListener(tweepy.StreamListener):
                         tweet = resp_message
                         post_result = api.update_status(status=tweet.encode('utf-8'), in_reply_to_status_id=status_id, media_ids=[media.media_id])                    
                     else:
-                        api.update_status(resp_message.encode('utf-8'), status_id)
+                        api.update_status(resp_message.encode('utf-8'), in_reply_to_status_id=status_id)
                 self.update_messages(obj_id)
 
     def on_error(self, status_code):
