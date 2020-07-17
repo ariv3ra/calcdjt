@@ -26,3 +26,9 @@ Create `config.json`
 ```
 docker build --rm=true -t gustos .
 ```
+
+### Docker Run -d 
+
+```
+docker run -d --restart unless-stopped --name app-gustos gustos:latest
+```

@@ -9,7 +9,9 @@ ACCESS_KEY = None
 ACCESS_SECRET = None
 MONGO_URI = None
 IMAGE_LIST = None
-IMAGE_DIR = 'kia_imgs/'
+
+fpath = os.path.dirname(sys.argv[0])
+IMAGE_DIR = os.path.abspath(fpath)+'/kia_imgs/'
 
 try:
     pathname = os.path.dirname(sys.argv[0])
@@ -164,7 +166,7 @@ class StreamListener(tweepy.StreamListener):
             if scr_name == "whlogz":
                 # api.retweet(status_id)
                 print("The account: {0} just tweeted".format(scr_name))
-                self.save_tweet(status)                
+                # self.save_tweet(status)                
         # get & calculate percentage & reply to tweet
         if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
