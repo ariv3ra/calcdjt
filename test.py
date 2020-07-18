@@ -9,6 +9,7 @@ CONSUMER_SECRET = None
 ACCESS_KEY = None
 ACCESS_SECRET = None
 MONGO_URI = None
+TWITTER_TARGETS = None
 IMAGE_LIST = None
 IMAGE_DIR = 'kia_imgs/'
 
@@ -202,8 +203,9 @@ def find_img(message, image_list, image_dir):
     # with open('log_media_ids.json', 'w') as fout:
     #     json.dump(name_media_id, fout)        
     
-find_img(TEST_MESSAGE,IMAGE_LIST,IMAGE_DIR)
-
+# find_img(TEST_MESSAGE,IMAGE_LIST,IMAGE_DIR)
+tm = "I'm hungry"
+resp = api.update_status(status=tm)
 # fp = '/home/angel/Pictures/dead_bounties'
 # iterate_files(fp)
 # msg = get_message()

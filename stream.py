@@ -8,6 +8,7 @@ CONSUMER_SECRET = None
 ACCESS_KEY = None
 ACCESS_SECRET = None
 MONGO_URI = None
+TWITTER_TARGETS = None
 IMAGE_LIST = None
 
 fpath = os.path.dirname(sys.argv[0])
@@ -168,23 +169,6 @@ class StreamListener(tweepy.StreamListener):
             # get & calculate percentage & reply to tweet
             if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
-                # get status details 
-                twt_id = self.get_tweet(user_id)
-                twt = api.get_status(twt_id)
-                followers_count = twt.user.followers_count
-                favorite_count = twt.favorite_count
-
-                # # calculate percentage
-                # perc_number = self.percentage(favorite_count, followers_count)
-                # abrev_followers =self.human_format(followers_count)
-                # # generate the status url
-                # twt_url = self.generate_status_url(scr_name, twt_id)
-                # resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
-                # # reply to new tweet
-                # api.update_status(resp,status_id)
-                # # Update record as processed
-                # self.update_tweet_processed(twt_id)
-
                 #######################################################3
                 # Response bot start
                 # respond with message
@@ -213,7 +197,7 @@ class StreamListener(tweepy.StreamListener):
                     self.update_messages(obj_id)
         else:
             # It's a retweet do nothing
-            if (user_id in TWITTER_TARGETS): 
+            if (user_id in TWITTER_TARGETS) and hasattr(status, 'retweeted_status'): 
                 print('{0}-StatusID:{1} Retweet'.format(scr_name,status_id))
 
     def on_error(self, status_code):
@@ -224,5 +208,4 @@ class StreamListener(tweepy.StreamListener):
 if __name__ == '__main__':
     # listener = StdOutListener()
     listener = StreamListener()
-    twitterStream = Stream(auth, listener)
-    twitterStream.filter(follow=TWITTER_TARGETS)
+    twitterStream = Stream(auth, listener).filter(follow=TWITTER_TARGETS)
