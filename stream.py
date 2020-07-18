@@ -40,7 +40,7 @@ except IOError as err:
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-api = tweepy.API(auth)
+api = tweepy.API(auth, wait_on_rate_limit=True)
 
 class StreamListener(tweepy.StreamListener):
     def generate_status_url(self, screen_name, tid):
@@ -157,60 +157,64 @@ class StreamListener(tweepy.StreamListener):
         status_id = status.id_str
         user_id = status.user.id_str
         scr_name = status.user.screen_name
-
-        #
+        
         # Check for tweets & replies from Targets
         if (user_id in TWITTER_TARGETS) and not hasattr(status, 'retweeted_status'):
             # if scr_name == "realDonaldTrump":
                 # self.save_tweet(status)
             if scr_name == "whlogz":
-                # api.retweet(status_id)
                 print("The account: {0} just tweeted".format(scr_name))
                 # self.save_tweet(status)                
-        # get & calculate percentage & reply to tweet
-        if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
+            # get & calculate percentage & reply to tweet
+            if (user_id) in RESPONSE_TARGETS and not self.has_tweet(status_id):
 
-            # get status details 
-            twt_id = self.get_tweet(user_id)
-            twt = api.get_status(twt_id)
-            followers_count = twt.user.followers_count
-            favorite_count = twt.favorite_count
+                # get status details 
+                twt_id = self.get_tweet(user_id)
+                twt = api.get_status(twt_id)
+                followers_count = twt.user.followers_count
+                favorite_count = twt.favorite_count
 
-            # # calcualte percentage
-            # perc_number = self.percentage(favorite_count, followers_count)
-            # abrev_followers =self.human_format(followers_count)
-            # # generate the status url
-            # twt_url = self.generate_status_url(scr_name, twt_id)
-            # resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
-            # # reply to new tweet
-            # api.update_status(resp,status_id)
-            # # Update record as processed
-            # self.update_tweet_processed(twt_id)
+                # # calculate percentage
+                # perc_number = self.percentage(favorite_count, followers_count)
+                # abrev_followers =self.human_format(followers_count)
+                # # generate the status url
+                # twt_url = self.generate_status_url(scr_name, twt_id)
+                # resp = self.percent_response(scr_name, perc_number, abrev_followers, twt_url)
+                # # reply to new tweet
+                # api.update_status(resp,status_id)
+                # # Update record as processed
+                # self.update_tweet_processed(twt_id)
 
-            #######################################################3
-            # Response bot start
-            # respond with message
-            message = self.get_message()
+                #######################################################3
+                # Response bot start
+                # respond with message
 
-            if message:
-                obj_id = message['_id']
-                msg = message['message']
+                message = self.get_message()
 
-                # Tweet the message
-                resp_message = '@{0}\n{1}'.format(scr_name, msg)
+                if message:
+                    obj_id = message['_id']
+                    msg = message['message']
 
-                # Check the length of tweet
-                if len(resp_message) <= 140:
-                    image_name =  self.get_media(resp_message, IMAGE_LIST, IMAGE_DIR)
-                    if image_name['found'] == True:
-                        # Upload image
-                        media = api.media_upload(IMAGE_DIR+image_name['img_name'])
-                        # Post tweet with image
-                        tweet = resp_message
-                        post_result = api.update_status(status=tweet.encode('utf-8'), in_reply_to_status_id=status_id, media_ids=[media.media_id])                    
-                    else:
-                        api.update_status(resp_message.encode('utf-8'), in_reply_to_status_id=status_id)
-                self.update_messages(obj_id)
+                    # Tweet the message
+                    resp_message = '@{0}\n{1}'.format(scr_name, msg)
+
+                    # Check the length of tweet
+                    if len(resp_message) <= 140:
+                        image_name =  self.get_media(resp_message, IMAGE_LIST, IMAGE_DIR)
+                        if image_name['found'] == True:
+                            # Upload image
+                            media = api.media_upload(IMAGE_DIR+image_name['img_name'])
+                            # Post tweet with image
+                            tweet = resp_message
+                            post_result = api.update_status(status=tweet.encode('utf-8'), 
+                                        in_reply_to_status_id=status_id, media_ids=[media.media_id])                    
+                        else:
+                            api.update_status(resp_message.encode('utf-8'), in_reply_to_status_id=status_id)
+                    self.update_messages(obj_id)
+        else:
+            # It's a retweet do nothing
+            if (user_id in TWITTER_TARGETS): 
+                print('{0}-StatusID:{1} Retweet'.format(scr_name,status_id))
 
     def on_error(self, status_code):
         if status_code == 420:

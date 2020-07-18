@@ -45,7 +45,7 @@ maxid = ''
 
 AUTH = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 AUTH.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-api = tweepy.API(AUTH)
+api = tweepy.API(AUTH, wait_on_rate_limit=True)
 
 def clean_tweet(tweet):
     '''
